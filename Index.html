@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d1c">
+<title>SHADOW SYSTEM</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d1c;color:#eaf4ff;font-family:Arial,sans-serif}
+header{text-align:center;padding:25px 10px;background:linear-gradient(135deg,#111c3b,#25104b)}
+h1{color:#54e8ff;letter-spacing:3px}
+p{color:#a9bad5}
+main{max-width:650px;margin:auto;padding:14px}
+.card{background:#121d34;border:1px solid #30476c;border-radius:15px;padding:18px;margin:14px 0}
+h2{color:#62eaff;font-size:19px}
+.level{font-size:35px;color:#65eaff;font-weight:bold}
+button{background:linear-gradient(90deg,#7255ee,#20bde7);color:white;border:0;border-radius:9px;padding:12px;margin:5px;font-weight:bold}
+input,select{width:100%;padding:12px;margin:7px 0;background:#091326;color:white;border:1px solid #405477;border-radius:8px}
+.bar{height:12px;background:#34435d;border-radius:20px;overflow:hidden}
+.fill{height:100%;width:0;background:#48e8ff}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat div{background:#091326;padding:15px;border-radius:10px}
+nav{display:flex;flex-wrap:wrap;justify-content:center;position:sticky;top:0;background:#080d1c;padding:8px;z-index:2}
+nav button{font-size:12px}
+.quest{padding:10px;border-bottom:1px solid #30415e}
+label{display:block;margin:8px 0}
+</style>
+</head>
+<body>
+<header>
+<div>HUNTER DEVELOPMENT PROGRAM</div>
+<h1>⚔ SHADOW SYSTEM</h1>
+<p>ARISE. EVOLVE. DOMINATE.</p>
+</header>
+
+<nav>
+<button onclick="show('home')">HOME</button>
+<button onclick="show('scanner')">SCANNER</button>
+<button onclick="show('quests')">QUESTS</button>
+<button onclick="show('stats')">STATUS</button>
+</nav>
+
+<main>
+<section id="home">
+<div class="card">
+<p>CURRENT HUNTER RANK</p>
+<div class="level" id="rank">E-RANK</div>
+<p>LEVEL <span id="level">1</span></p>
+<div class="bar"><div class="fill" id="bar"></div></div>
+<p id="xp">0 / 100 XP</p>
+</div>
+<div class="card">
+<h2>WELCOME HUNTER</h2>
+<p id="welcome">Your journey starts now.</p>
+<button onclick="show('scanner')">START SCANNER</button>
+<button onclick="show('quests')">DAILY QUESTS</button>
+</div>
+</section>
+
+<section id="scanner" hidden>
+<div class="card">
+<h2>🧬 PERSONAL SCANNER</h2>
+<p>Apni habits aur performance ka assessment karo.</p>
+<input id="name" placeholder="Your name">
+<input id="age" type="number" placeholder="Your age">
+<input id="weight" type="number" placeholder="Weight in KG (optional)">
+<div id="questions"></div>
+<button onclick="scan()">⚡ SCAN NOW</button>
+<div id="report"></div>
+</div>
+</section>
+
+<section id="quests" hidden>
+<div class="card">
+<h2>⚔ DAILY QUESTS</h2>
+<p>Complete missions to earn XP.</p>
+<div id="missions"></div>
+<button onclick="claim()">CLAIM XP</button>
+<p id="claimmsg"></p>
+</div>
+</section>
+
+<section id="stats" hidden>
+<div class="card">
+<h2>📊 HUNTER STATUS</h2>
+<div class="stat">
+<div>💪<h2 id="fitness">—</h2>Fitness</div>
+<div>🧠<h2 id="focus">—</h2>Focus</div>
+<div>📚<h2 id="learning">—</h2>Learning</div>
+<div>🔥<h2 id="discipline">—</h2>Discipline</div>
+</div>
+</div>
+</section>
+</main>
+
+<script>
+let data=JSON.parse(localStorage.getItem("shadow")||'{"xp":0,"level":1,"last":"","name":""}');
+const questions=[
+["sleep","Roz kitni neend lete ho?",["5 ghante se kam","5-6 ghante","7-9 ghante"]],
+["fitness","Exercise kitne din karte ho?",["0 din","1-2 din","3-4 din","5-7 din"]],
+["focus","Kitni der focus kar sakte ho?",["10 minute se kam","10-20 minute","20-40 minute","40+ minute"]],
+["discipline","Daily routine follow karte ho?",["Kabhi nahi","Kabhi-kabhi","Aksar","Roz"]],
+["learning","Roz kitna padhte ho?",["Bilkul nahi","15 minute","30 minute","1 ghanta+"]]
+];
+const missions=[
+["20 minute walk",15],
+["25 minute focused study",20],
+["10 minute skill practice",15],
+["Apna room organize karo",10],
+["Kal ka plan banao",10]
+];
+function save(){localStorage.setItem("shadow",JSON.stringify(data));update()}
+function update(){
+let need=data.level*100,cur=data.xp%need;
+document.getElementById("level").textContent=data.level;
+document.getElementById("xp").textContent=cur+" / "+need+" XP";
+document.getElementById("bar").style.width=cur/need*100+"%";
+document.getElementById("rank").textContent=data.level>=20?"S-RANK":data.level>=10?"A-RANK":data.level>=5?"B-RANK":data.level>=3?"C-RANK":data.level>=2?"D-RANK":"E-RANK";
+document.getElementById("welcome").textContent=data.name?"Welcome back, "+data.name+"!":"Your hunter journey begins.";
+}
+function show(id){
+["home","scanner","quests","stats"].forEach(x=>document.getElementById(x).hidden=x!==id);
+}
+function build(){
+document.getElementById("questions").innerHTML=questions.map((q,i)=>`<p>${i+1}. ${q[1]}</p><select id="${q[0]}"><option value="">Choose answer</option>${q[2].map((v,j)=>`<option value="${j}">${v}</option>`).join("")}</select>`).join("");
+document.getElementById("missions").innerHTML=missions.map((m,i)=>`<div class="quest"><label><input type="checkbox" id="m${i}" style="width:auto"> ${m[0]} (+${m[1]} XP)</label></div>`).join("");
+}
+function scan(){
+let vals=questions.map(q=>document.getElementById(q[0]).value);
+if(vals.some(v=>v==="")){alert("Sabhi questions ka jawab do!");return}
+let a=vals.map(Number),names=["Sleep","Fitness","Focus","Discipline","Learning"];
+let report=questions.map((q,i)=>`<p>${names[i]}: ${a[i]===0?"Needs improvement":a[i]===1?"Developing":a[i]===2?"Good":"Strong"}</p>`).join("");
+document.getElementById("report").innerHTML="<h2>SCAN REPORT</h2>"+report+"<p>Yeh self-assessment hai, medical ya IQ test nahi.</p>";
+document.getElementById("fitness").textContent=names[1]&&["Low","Developing","Good","Strong"][a[1]];
+document.getElementById("focus").textContent=["Low","Developing","Good","Strong"][a[2]];
+document.getElementById("discipline").textContent=["Low","Developing","Good","Strong"][a[3]];
+document.getElementById("learning").textContent=["Low","Developing","Good","Strong"][a[4]];
+data.name=document.getElementById("name").value||"Hunter";save();
+}
+function claim(){
+let today=new Date().toDateString();
+if(data.last===today){document.getElementById("claimmsg").textContent="Aaj XP claim ho chuka hai.";return}
+let total=0;
+missions.forEach((m,i)=>{if(document.getElementById("m"+i).checked)total+=m[1]});
+if(!total){alert("Pehle quest complete karke tick karo.");return}
+data.xp+=total;data.last=today;
+while(data.xp>=data.level*100){data.xp-=data.level*100;data.level++}
+save();document.getElementById("claimmsg").textContent="+"+total+" XP earned! LEVEL UP!";
+}
+build();update();
+</script>
+</body>
+</html>
